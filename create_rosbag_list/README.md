@@ -14,11 +14,11 @@ The output csv contains the following information.
 $ cd creaete_rosbag_list
 
 # case 1
-$ ./create_rosbag_list <directory> > ./list.csv
+$ ./create_rosbag_list.sh <directory> > ./list.csv
 # This will output information about all the rosbag files inside <directory>
 
 # case 2
-$ ./create_rosbag_list <original directory> <splitted directory>
+$ ./create_rosbag_list.sh <original directory> <splitted directory>
 # This will output information about all the rosbag files inside <splitted directory>
 # and also the filename of the original rosbag files which correspond to the splitted one
 ```
