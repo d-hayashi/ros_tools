@@ -1,0 +1,6 @@
+#!/usr/bin/env xdg-open
+[Desktop Entry]
+Name=Open with rqt_bag
+Comment=Open bag file with rqt_bag
+Exec=xterm -e "source /opt/ros/*/setup.bash; ~/.local/bin/run_rqt_bag/run_rqt_bag.sh %U"
+Type=Application
