@@ -25,20 +25,24 @@ class FilterJob(object):
             self.start = None
         if ":" in start:
             self.start = datetime.datetime.strptime(start, "%H:%M:%S")
-        elif "." in start:
-            self.start = datetime.datetime.strptime(start.split(".")[0], "%S") - datetime.datetime(1900,1,1)
         else:
-            self.start = datetime.datetime.strptime(start, "%S") - datetime.datetime(1900,1,1)
+            if "." in start:
+                start = start.split(".")[0]
+            start = int(start)
+            start = "{0:02d}:{1:02d}:{2:02d}".format((start % (60*60*24)) // 3600, (start % (60*60)) // 60, (start % 60))
+            self.start = datetime.datetime.strptime(start, "%H:%M:%S") - datetime.datetime(1900,1,1)
         #self.start = datetime.datetime.strptime(start, "%H:%M:%S") if start is not None else None
   	self.start_time = None
         if end is None:
             self.end = None
         if ":" in end:
             self.end = datetime.datetime.strptime(end, "%H:%M:%S")
-        elif "." in end:
-            self.end = datetime.datetime.strptime(end.split(".")[0], "%S") - datetime.datetime(1900,1,1)
         else:
-            self.end = datetime.datetime.strptime(end, "%S") - datetime.datetime(1900,1,1)
+            if "." in end:
+                end = end.split(".")[0]
+            end = int(end)
+            end = "{0:02d}:{1:02d}:{2:02d}".format((end % (60*60*24)) // 3600, (end % (60*60)) // 60, (end % 60))
+            self.end = datetime.datetime.strptime(end, "%H:%M:%S") - datetime.datetime(1900,1,1)
         #self.end = datetime.datetime.strptime(end, "%H:%M:%S") if end is not None else None
         self.end_time = None
         super(FilterJob, self).__init__()
