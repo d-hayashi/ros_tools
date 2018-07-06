@@ -26,9 +26,9 @@ class FilterJob(object):
         if ":" in start:
             self.start = datetime.datetime.strptime(start, "%H:%M:%S")
         elif "." in start:
-            self.start = datetime.datetime.strptime(start.split(".")[0], "%S")
+            self.start = datetime.datetime.strptime(start.split(".")[0], "%S") - datetime.datetime(1900,1,1)
         else:
-            self.start = datetime.datetime.strptime(start, "%S")
+            self.start = datetime.datetime.strptime(start, "%S") - datetime.datetime(1900,1,1)
         #self.start = datetime.datetime.strptime(start, "%H:%M:%S") if start is not None else None
   	self.start_time = None
         if end is None:
@@ -36,9 +36,9 @@ class FilterJob(object):
         if ":" in end:
             self.end = datetime.datetime.strptime(end, "%H:%M:%S")
         elif "." in end:
-            self.end = datetime.datetime.strptime(end.split(".")[0], "%S")
+            self.end = datetime.datetime.strptime(end.split(".")[0], "%S") - datetime.datetime(1900,1,1)
         else:
-            self.end = datetime.datetime.strptime(end, "%S")
+            self.end = datetime.datetime.strptime(end, "%S") - datetime.datetime(1900,1,1)
         #self.end = datetime.datetime.strptime(end, "%H:%M:%S") if end is not None else None
         self.end_time = None
         super(FilterJob, self).__init__()
@@ -57,9 +57,13 @@ class FilterJob(object):
         bag = rosbag.Bag(self.input_file)
         bag_start_time = datetime.datetime.fromtimestamp(bag.get_start_time())
         if self.start is not None:
+            if type(self.start).__name__ == 'timedelta':
+                self.start = bag_start_time + self.start
             start_datetime = datetime.datetime.combine(bag_start_time.date(), self.start.time())
             self.start_time = int(time.mktime(start_datetime.timetuple()))
         if self.end is not None:
+            if type(self.end).__name__ == 'timedelta':
+                self.end = bag_start_time + self.end
             end_datetime = datetime.datetime.combine(bag_start_time.date(), self.end.time())
             self.end_time = int(time.mktime(end_datetime.timetuple()))
 
