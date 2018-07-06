@@ -21,9 +21,25 @@ class FilterJob(object):
         self.logger = logging.getLogger(name=type(self).__name__)
         self.input_file = os.path.join(input_dir, input_file)
         self.output_file = os.path.join(output_dir, output_file)
-        self.start = datetime.datetime.strptime(start, "%H:%M:%S") if start is not None else None
-        self.start_time = None
-        self.end = datetime.datetime.strptime(end, "%H:%M:%S") if end is not None else None
+        if start is None:
+            self.start = None
+        if ":" in start:
+            self.start = datetime.datetime.strptime(start, "%H:%M:%S")
+        elif "." in start:
+            self.start = datetime.datetime.strptime(start.split(".")[0], "%S")
+        else:
+            self.start = datetime.datetime.strptime(start, "%S")
+        #self.start = datetime.datetime.strptime(start, "%H:%M:%S") if start is not None else None
+  	self.start_time = None
+        if end is None:
+            self.end = None
+        if ":" in end:
+            self.end = datetime.datetime.strptime(end, "%H:%M:%S")
+        elif "." in end:
+            self.end = datetime.datetime.strptime(end.split(".")[0], "%S")
+        else:
+            self.end = datetime.datetime.strptime(end, "%S")
+        #self.end = datetime.datetime.strptime(end, "%H:%M:%S") if end is not None else None
         self.end_time = None
         super(FilterJob, self).__init__()
 
