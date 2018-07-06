@@ -8,6 +8,7 @@ The output csv contains the following information.
 - end frame
 - start time (HH:MM:SS)
 - end time (HH:MM:SS)
+- file size
 
 ## How to use
 ```bash

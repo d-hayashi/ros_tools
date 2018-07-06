@@ -30,6 +30,8 @@ class FilterJob(object):
     def check(self):
         if not os.path.exists(self.input_file):
             raise IOError("file does not exist: {}".format(self.input_file))
+        if self.output_file == "":
+            raise ValueError("output path is not specified")
         if self.start > self.end:
             raise ValueError("start time must be before end time")
         return

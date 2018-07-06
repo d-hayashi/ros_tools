@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 #
-# Create csv file that lists rosbag files in a directory
+# Remove omron related topics from rosbag
 #
 
 function usage() {
@@ -18,20 +18,22 @@ export -f usage
 
 
 function header() {
-	echo "元bagファイル名,作成したファイル名,開始フレーム,終了フレーム,開始時間,終了時間,時間,メモ(トンネル、橋など)"
+	echo "元bagファイル名,作成したファイル名,開始フレーム,終了フレーム,開始時間,終了時間,時間,メモ(トンネル、橋など),size"
 }
 export -f header
 
 function header2() {
-	echo "ファイル名,開始フレーム,終了フレーム,開始時間,終了時間,時間,メモ(トンネル、橋など)"
+	echo "ファイル名,開始フレーム,終了フレーム,開始時間,終了時間,時間,メモ(トンネル、橋など),size"
 }
 export -f header2
 
 function get_rosbag_info() {
-	echo -n ${1##*/}
+	#echo -n ${1##*/}
 	echo -n ",,,"
 	echo -n `python get_rosbag_info.py $1`
 	echo -n ","
+	echo -n ","
+	echo -n `du -h $1 | awk '{print $1}'`
 }
 export -f get_rosbag_info
 
@@ -45,16 +47,18 @@ function didFindOriginalBagFile() {
 
 	index=0
 	splittedFiles=`find ${splittedDirectory} -mindepth 1 -maxdepth 3 -name "*${candidate_name}*" | sort`
-	if [ "${splittedFiles}" == "" ]; then
-		echo "${filename},,,,,,,"
-	fi
+	#if [ "${splittedFiles}" == "" ]; then
+	#	echo "${filename},,,,,,,"
+	#fi
+
+	echo -n "${filename},"
+	get_rosbag_info ${1}
+	echo ""
+
 	for file in ${splittedFiles};
 	do
-		if [ "$index" == 0 ]; then
-			echo -n "${filename},"
-		else
-			echo -n ","
-		fi
+		echo -n ","
+		echo -n ${file##*/}
 		get_rosbag_info $file
 		echo ""
 		index=$(( index + 1 ))
@@ -88,6 +92,7 @@ if [ "${splittedDirectory}" == "" ]; then
 	header2
 	for file in `find ${originalDirectory} -mindepth 1 -maxdepth 3 -name "*.bag" | sort`;
 	do
+		echo -n "${file##*/}"
 		get_rosbag_info ${file}
 		echo ""
 	done
