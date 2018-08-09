@@ -136,6 +136,8 @@ def csv_reader(path_to_csv):
             if row[0] != "":
                 original_file = row[0]
             splitted_file = row[1]
+            if splitted_file == "":
+                continue
             start = row[4] if row[4] != '' else None
             end = row[5] if row[5] != '' else None
             yield original_file, splitted_file, start, end
