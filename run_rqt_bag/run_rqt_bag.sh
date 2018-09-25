@@ -17,6 +17,7 @@ if [ ! -f "${bag_file}" ]; then
 fi
 
 # environment variables
+source ~/Autoware/ros/devel/setup.bash
 export ROS_HOSTNAME=$(hostname)
 export ROS_MASTER_URI=http://$(hostname):${ros_port}
 
@@ -34,4 +35,5 @@ sleep 1
 
 # start rqt_bag
 rqt_bag ${bag_file} &
-rqt_image_view
+rqt_image_view &
+rqt
