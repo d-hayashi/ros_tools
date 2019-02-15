@@ -78,12 +78,14 @@ class FilterJob(object):
             if type(self.start).__name__ == 'timedelta':
                 self.start = bag_start_time + self.start
             start_datetime = datetime.datetime.combine(bag_start_time.date(), self.start.time())
-            self.start_time = int(time.mktime(start_datetime.timetuple()))
+            # self.start_time = int(time.mktime(start_datetime.timetuple()))
+            self.start_time = start_datetime.strftime("%s.%f")
         if self.end is not None:
             if type(self.end).__name__ == 'timedelta':
                 self.end = bag_start_time + self.end
             end_datetime = datetime.datetime.combine(bag_start_time.date(), self.end.time())
-            self.end_time = int(time.mktime(end_datetime.timetuple()))
+            # self.end_time = int(time.mktime(end_datetime.timetuple()))
+            self.end_time = end_datetime.strftime("%s.%f")
 
     def run(self):
         self.check()
@@ -91,13 +93,13 @@ class FilterJob(object):
 
         # expression
         if self.start is None:
-            expression = "t.secs >= {}".format(self.start_time)
+            expression = "t.to_sec() >= {}".format(self.start_time)
         elif self.end is None:
-            expression = "t.secs <= {}".format(self.end_time)
+            expression = "t.to_sec() <= {}".format(self.end_time)
         elif (self.start is None) and (self.end is None):
             raise ValueError("both start and end are not specified")
         else:
-            expression = "{0} <= t.secs <= {1}".format(self.start_time, self.end_time)
+            expression = "{0} <= t.to_sec() <= {1}".format(self.start_time, self.end_time)
 
         command = 'rosbag filter {0} {1} "{2}"'.format(self.input_file, self.output_file, expression)
         self.logger.debug("command: {}".format(command))
