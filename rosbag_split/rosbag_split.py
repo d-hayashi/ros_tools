@@ -17,10 +17,11 @@ args = None
 
 
 class FilterJob(object):
-    def __init__(self, input_file, output_file, start, end, input_dir="./", output_dir="./"):
+    def __init__(self, input_file, output_file, start, end, input_dir="./", output_dir="./", overwrite=False):
         self.logger = logging.getLogger(name=type(self).__name__)
         self.input_file = os.path.join(input_dir, input_file)
         self.output_file = os.path.join(output_dir, output_file)
+        self.overwrite = overwrite
         if start is None:
             self.start = None
         if ":" in start:
@@ -31,15 +32,8 @@ class FilterJob(object):
             else:
                 self.start = datetime.datetime.strptime(start, "%H:%M:%S")
         else:
-            microsec = "0"
-            if "." in start:
-                start = start.split(".")[0]
-                microsec = start.split(".")[1][0:6] if len(start.split(".")[1]) > 6 else start.split(".")[1]
-            start = int(start)
-            start = "{0:02d}:{1:02d}:{2:02d}.{3}".format((start % (60*60*24)) // 3600, (start % (60*60)) // 60, (start % 60), microsec)
-            self.start = datetime.datetime.strptime(start, "%H:%M:%S.%f") - datetime.datetime(1900,1,1)
-        #self.start = datetime.datetime.strptime(start, "%H:%M:%S") if start is not None else None
-  	self.start_time = None
+            self.start = start
+        self.start_time = None
         if end is None:
             self.end = None
         if ":" in end:
@@ -50,20 +44,15 @@ class FilterJob(object):
             else:
                 self.end = datetime.datetime.strptime(end, "%H:%M:%S")
         else:
-            microsec = "0"
-            if "." in end:
-                end = end.split(".")[0]
-                microsec = end.split(".")[1][0:6] if len(end.split(".")[1]) > 6 else end.split(".")[1]
-            end = int(end)
-            end = "{0:02d}:{1:02d}:{2:02d}.{3}".format((end % (60*60*24)) // 3600, (end % (60*60)) // 60, (end % 60), microsec)
-            self.end = datetime.datetime.strptime(end, "%H:%M:%S.%f") - datetime.datetime(1900,1,1)
-        #self.end = datetime.datetime.strptime(end, "%H:%M:%S") if end is not None else None
+            self.end = end
         self.end_time = None
         super(FilterJob, self).__init__()
 
     def check(self):
         if not os.path.exists(self.input_file):
             raise IOError("file does not exist: {}".format(self.input_file))
+        if os.path.exists(self.output_file) and not self.overwrite:
+            raise IOError("output file exists: {}".format(self.output_file))
         if self.output_file == "":
             raise ValueError("output path is not specified")
         if self.start > self.end:
@@ -77,15 +66,17 @@ class FilterJob(object):
         if self.start is not None:
             if type(self.start).__name__ == 'timedelta':
                 self.start = bag_start_time + self.start
-            start_datetime = datetime.datetime.combine(bag_start_time.date(), self.start.time())
-            # self.start_time = int(time.mktime(start_datetime.timetuple()))
-            self.start_time = start_datetime.strftime("%s.%f")
+                start_datetime = datetime.datetime.combine(bag_start_time.date(), self.start.time())
+                self.start_time = start_datetime.strftime("%s.%f")
+            else:
+                self.start_time = self.start
         if self.end is not None:
             if type(self.end).__name__ == 'timedelta':
                 self.end = bag_start_time + self.end
-            end_datetime = datetime.datetime.combine(bag_start_time.date(), self.end.time())
-            # self.end_time = int(time.mktime(end_datetime.timetuple()))
-            self.end_time = end_datetime.strftime("%s.%f")
+                end_datetime = datetime.datetime.combine(bag_start_time.date(), self.end.time())
+                self.end_time = end_datetime.strftime("%s.%f")
+            else:
+                self.end_time = self.end
 
     def run(self):
         self.check()
@@ -165,6 +156,7 @@ def create_parser():
     parser = argparse.ArgumentParser(description="Split rosbag file based on csv file")
     parser.add_argument("-v", "--verbose", action="store_true", help="Debug mode")
     parser.add_argument("-d", "--dry-run", action="store_true", help="Dry run mode")
+    parser.add_argument("-y", "--overwrite", action="store_true", help="overwrite output files")
     parser.add_argument("-i", "--input-dir", type=str, default="./",
                         help="input directory to search rosbag (original) file")
     parser.add_argument("-o", "--output-dir", type=str, default="./",
@@ -186,7 +178,7 @@ def main():
     while True:
         try:
             input_file, output_file, start, end = next(reader)
-            job = FilterJob(input_file, output_file, start, end, input_dir=args.input_dir, output_dir=args.output_dir)
+            job = FilterJob(input_file, output_file, start, end, input_dir=args.input_dir, output_dir=args.output_dir, overwrite=args.overwrite)
             job_handler.append_job(job)
         except EOFError:
             break
